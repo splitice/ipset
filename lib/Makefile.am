@@ -5,6 +5,7 @@ IPSET_SETTYPE_LIST = \
 	ipset_bitmap_ipmac.c \
 	ipset_bitmap_port.c \
 	ipset_hash_ip.c \
+        ipset_hash_ipip.c \
 	ipset_hash_ipport.c \
 	ipset_hash_ipmark.c \
 	ipset_hash_ipportip.c \
