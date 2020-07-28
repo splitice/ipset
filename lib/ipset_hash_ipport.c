@@ -498,7 +498,7 @@ static struct ipset_type ipset_hash_ipport5 = {
 	.usagefn = ipset_port_usage,
 	.description = "skbinfo support",
 };
-static struct ipset_type ipset_hash_ipport5 = {
+static struct ipset_type ipset_cthash_ipport5 = {
 	.name = "cthash:ip,port",
 	.alias = { "ipporthash", NULL },
 	.revision = 5,
