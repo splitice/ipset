@@ -1,0 +1,14 @@
+on:
+  push:
+  workflow_dispatch:
+        
+name: "build-kernel"
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: AutoModality/action-clean@v1
+      - uses: actions/checkout@v2
+      - name: "prepare"
+        run: |
+          ./autogen.sh
