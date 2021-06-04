@@ -30,3 +30,4 @@ kernel/include/linux/netfilter/ipset/ip_set_compat.h
 /stamp-h1
 
 /libltdl/
+.vscode/
