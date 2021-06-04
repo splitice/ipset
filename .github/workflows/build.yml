@@ -2,7 +2,7 @@ on:
   push:
   workflow_dispatch:
         
-name: "build-kernel"
+name: "build-ipset"
 jobs:
   build:
     runs-on: ubuntu-latest
