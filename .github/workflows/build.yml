@@ -12,3 +12,8 @@ jobs:
       - name: "prepare"
         run: |
           ./autogen.sh
+          ./configure
+      - name: "make"
+        run: |
+          make
+          make modules
