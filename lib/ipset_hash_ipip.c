@@ -480,7 +480,7 @@ static struct ipset_type ipset_hash_ipip6 = {
 			.opt = IPSET_OPT_IP2
 		},
 		[IPSET_DIM_THREE - 1] = {
-			.parse = ipset_parse_port,
+			.parse = ipset_parse_single_tcp_port,
 			.print = ipset_print_port,
 			.opt = IPSET_OPT_PORT
 		},
@@ -523,8 +523,7 @@ static struct ipset_type ipset_hash_ipip6 = {
 				IPSET_ARG_NONE,
 			},
 			.need = IPSET_FLAG(IPSET_OPT_IP)
-				| IPSET_FLAG(IPSET_OPT_IP2)
-				| IPSET_FLAG(IPSET_OPT_PORT),
+				| IPSET_FLAG(IPSET_OPT_IP2),
 			.full = IPSET_FLAG(IPSET_OPT_IP)
 				| IPSET_FLAG(IPSET_OPT_IP_TO)
 				| IPSET_FLAG(IPSET_OPT_IP2)
