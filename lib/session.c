@@ -214,6 +214,13 @@ ipset_session_output(struct ipset_session *session,
 	return 0;
 }
 
+enum ipset_output_mode
+ipset_session_get_output(struct ipset_session *session)
+{
+	assert(session);
+	return session->mode;
+}
+
 /*
  * Error and warning reporting
  */

@@ -1231,6 +1231,8 @@ ipset_parser(struct ipset *ipset, int oargc, char *oargv[])
 			if (ret < 0)
 				return ret;
 		}
+		if(cmd == IPSET_CMD_SAVE && ipset_session_get_output(session) == IPSET_LIST_NONE)
+			ipset_session_output(session, IPSET_LIST_SAVE);
 		/* Fall through to parse optional setname */
 		fallthrough;
 	case IPSET_CMD_DESTROY:

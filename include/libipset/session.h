@@ -106,6 +106,9 @@ enum ipset_output_mode {
 extern int ipset_session_output(struct ipset_session *session,
 				enum ipset_output_mode mode);
 
+extern enum ipset_output_mode
+ipset_session_get_output(struct ipset_session *session);
+
 extern int ipset_commit(struct ipset_session *session);
 extern int ipset_cmd(struct ipset_session *session, enum ipset_cmd cmd,
 		     uint32_t lineno);
