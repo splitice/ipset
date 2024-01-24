@@ -1,18 +1,20 @@
 dnl Boilerplate
-AC_INIT([ipset], [7.6], [kadlec@netfilter.org])
+AC_INIT([ipset], [7.19], [kadlec@netfilter.org])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CANONICAL_HOST
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_HEADER([config.h])
-AM_INIT_AUTOMAKE([foreign subdir-objects tar-pax])
+AM_INIT_AUTOMAKE([foreign subdir-objects tar-pax no-dist-gzip dist-xz])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
+AC_PROG_LN_S
 AC_ENABLE_STATIC
 LT_INIT([dlopen])
 LT_CONFIG_LTDL_DIR([libltdl])
 LTDL_INIT([nonrecursive])
 
 PKG_PROG_PKG_CONFIG
+PKG_INSTALLDIR
 
 dnl Shortcut: Linux supported alone
 case "$host" in
@@ -26,7 +28,7 @@ AC_ARG_WITH([kmod],
                            [Build the kernel module (default: yes)]),
             [BUILDKMOD="$withval";],
             [BUILDKMOD="yes";])
-AM_CONDITIONAL(WITH_KMOD, test "$BUILDKMOD" == "yes")
+AM_CONDITIONAL(WITH_KMOD, test "$BUILDKMOD" = "yes")
 
 dnl Additional arguments
 dnl Kernel build directory or source tree
@@ -75,7 +77,7 @@ if test "x$enable_bashcompl" = "xyes"; then
 	AC_SUBST(bashcompdir)
 fi
 
-if test "$BUILDKMOD" == "yes"
+if test "$BUILDKMOD" = "yes"
 then
 dnl Sigh: check kernel version dependencies
 if test "$KBUILDDIR" != ""
@@ -203,17 +205,31 @@ AC_CHECK_TYPES([union nf_inet_addr],,,[#include <linux/types.h>
 dnl Checks for functions
 AC_CHECK_FUNCS(gethostbyname2)
 
-if test "$BUILDKMOD" == "yes"
+if test "$BUILDKMOD" = "yes"
 then
 dnl Check kernel incompatibilities... Ugly like hell
+
+AC_MSG_CHECKING([kernel source for INIT_DEFERRABLE_WORK])
+if test -f $ksourcedir/include/linux/workqueue.h && \
+   $GREP -q 'INIT_DEFERRABLE_WORK' $ksourcedir/include/linux/workqueue.h; then
+	AC_MSG_RESULT(yes)
+	AC_SUBST(HAVE_INIT_DEFERRABLE_WORK, define)
+else
+	AC_MSG_RESULT(no)
+	AC_SUBST(HAVE_INIT_DEFERRABLE_WORK, undef)
+fi
 
 AC_MSG_CHECKING([kernel source for system_power_efficient_wq])
 if test -f $ksourcedir/include/linux/workqueue.h && \
    $GREP -q 'system_power_efficient_wq' $ksourcedir/include/linux/workqueue.h; then
 	AC_MSG_RESULT(yes)
-else
+	AC_SUBST(HAVE_SYSTEM_POWER_EFFICIENT_WQ, define)
+elif test -f $ksourcedir/include/linux/workqueue.h && \
+   $GREP -q 'system_wq' $ksourcedir/include/linux/workqueue.h; then
 	AC_MSG_RESULT(no)
-	AC_MSG_ERROR([Kernel source tree is too old, at least v3.11 is required])
+	AC_SUBST(HAVE_SYSTEM_POWER_EFFICIENT_WQ, undef)
+else
+	AC_MSG_ERROR([Kernel source tree is too old, at least v2.36 is required])
 fi
 
 AC_MSG_CHECKING([kernel source for struct xt_action_param])
@@ -305,9 +321,13 @@ elif test -f $ksourcedir/include/linux/netlink.h && \
    $AWK '/ netlink_dump_start\(/,/\)/' $ksourcedir/include/linux/netlink.h | $GREP -q 'min_dump_alloc.*;'; then
 	AC_MSG_RESULT(6 args)
 	AC_SUBST(HAVE_NETLINK_DUMP_START_ARGS, 6)
-else
+elif test -f $ksourcedir/include/linux/netlink.h && \
+   $AWK '/^struct netlink_dump_control {/,/\}/' $ksourcedir/include/linux/netlink.h | $GREP -q '\(\*start\)'; then
 	AC_MSG_RESULT(4 args)
 	AC_SUBST(HAVE_NETLINK_DUMP_START_ARGS, 4)
+else
+	AC_MSG_RESULT(7 fake args)
+	AC_SUBST(HAVE_NETLINK_DUMP_START_ARGS, 7)
 fi
 
 AC_MSG_CHECKING([kernel source for ns_capable])
@@ -424,6 +444,10 @@ if test -f $ksourcedir/include/linux/mm.h && \
    $GREP -q 'kvcalloc' $ksourcedir/include/linux/mm.h; then
 	AC_MSG_RESULT(yes)
 	AC_SUBST(HAVE_KVCALLOC, define)
+elif test -f $ksourcedir/include/linux/slab.h && \
+     $GREP -q 'kvcalloc' $ksourcedir/include/linux/slab.h; then
+	AC_MSG_RESULT(yes)
+	AC_SUBST(HAVE_KVCALLOC, define)
 else
 	AC_MSG_RESULT(no)
 	AC_SUBST(HAVE_KVCALLOC, undef)
@@ -432,6 +456,10 @@ fi
 AC_MSG_CHECKING([kernel source for kvfree])
 if test -f $ksourcedir/include/linux/mm.h && \
    $GREP -q 'kvfree' $ksourcedir/include/linux/mm.h; then
+	AC_MSG_RESULT(yes)
+	AC_SUBST(HAVE_KVFREE, define)
+elif test -f $ksourcedir/include/linux/slab.h && \
+     $GREP -q 'kvfree' $ksourcedir/include/linux/slab.h; then
 	AC_MSG_RESULT(yes)
 	AC_SUBST(HAVE_KVFREE, define)
 else
@@ -707,11 +735,31 @@ else
 	AC_SUBST(HAVE_LOCKDEP_NFNL_IS_HELD, undef)
 fi
 
+AC_MSG_CHECKING([kernel source for nla_strscpy() in netlink.h])
+if test -f $ksourcedir/include/net/netlink.h && \
+   $GREP -q ' nla_strscpy' $ksourcedir/include/net/netlink.h; then
+	AC_MSG_RESULT(yes)
+	AC_SUBST(HAVE_NLA_STRSCPY, define)
+else
+	AC_MSG_RESULT(no)
+	AC_SUBST(HAVE_NLA_STRSCPY, undef)
+fi
+
 AC_MSG_CHECKING([kernel source for strscpy() in string.h])
 if test -f $ksourcedir/include/linux/timer.h && \
    $GREP -q ' strscpy' $ksourcedir/include/linux/string.h; then
 	AC_MSG_RESULT(yes)
 	AC_SUBST(HAVE_STRSCPY, define)
+else
+	AC_MSG_RESULT(no)
+	AC_SUBST(HAVE_STRSCPY, undef)
+fi
+
+AC_MSG_CHECKING([kernel source for strscpy_pad() in string.h])
+if test -f $ksourcedir/include/linux/timer.h && \
+   $GREP -q ' strscpy_pad' $ksourcedir/include/linux/string.h; then
+	AC_MSG_RESULT(yes)
+	AC_SUBST(HAVE_STRSCPY_PAD, define)
 else
 	AC_MSG_RESULT(no)
 	AC_SUBST(HAVE_STRSCPY, undef)
@@ -726,6 +774,110 @@ if test -f $ksourcedir/include/linux/rcupdate.h && \
 else
 	AC_MSG_RESULT(no)
 	AC_SUBST(HAVE_SYNCHRONIZE_RCU_BH, undef)
+fi
+
+AC_MSG_CHECKING([kernel source for the fourth arg of list_for_each_entry_rcu() in rculist.h])
+if test -f $ksourcedir/include/linux/rculist.h && \
+   $GREP -q 'define list_for_each_entry_rcu(pos, head, member, cond' $ksourcedir/include/linux/rculist.h; then
+	AC_MSG_RESULT(yes)
+	AC_SUBST(HAVE_LIST_FOR_EACH_ENTRY_RCU_FOUR_ARGS, define)
+else
+	AC_MSG_RESULT(no)
+	AC_SUBST(HAVE_LIST_FOR_EACH_ENTRY_RCU_FOUR_ARGS, undef)
+fi
+
+AC_MSG_CHECKING([kernel source for skb_protocol() in if_vlan.h])
+if test -f $ksourcedir/include/linux/if_vlan.h && \
+   $GREP -q 'static inline __be16 skb_protocol' $ksourcedir/include/linux/if_vlan.h; then
+	AC_MSG_RESULT(yes)
+	AC_SUBST(HAVE_SKB_PROTOCOL, define)
+else
+	AC_MSG_RESULT(no)
+	AC_SUBST(HAVE_SKB_PROTOCOL, undef)
+fi
+
+AC_MSG_CHECKING([kernel source for NLA_POLICY_EXACT_LEN() in netlink.h])
+if test -f $ksourcedir/include/net/netlink.h && \
+   $GREP -q 'define NLA_POLICY_EXACT_LEN' $ksourcedir/include/net/netlink.h; then
+	AC_MSG_RESULT(yes)
+	AC_SUBST(HAVE_NLA_POLICY_EXACT_LEN, define)
+else
+	AC_MSG_RESULT(no)
+	AC_SUBST(HAVE_NLA_POLICY_EXACT_LEN, undef)
+fi
+
+AC_MSG_CHECKING([kernel source for nfnl_msg_put() in nfnetlink.h])
+if test -f $ksourcedir/include/linux/netfilter/nfnetlink.h && \
+   $GREP -q 'nfnl_msg_put' $ksourcedir/include/linux/netfilter/nfnetlink.h; then
+	AC_MSG_RESULT(yes)
+	AC_SUBST(HAVE_NFNL_MSG_PUT, define)
+else
+	AC_MSG_RESULT(no)
+	AC_SUBST(HAVE_NFNL_MSG_PUT, undef)
+fi
+
+AC_MSG_CHECKING([kernel source for struct nfnl_info in nfnl_callback function])
+if test -f $ksourcedir/include/linux/netfilter/nfnetlink.h && \
+   $AWK '/^struct nfnl_callback /,/^}/' $ksourcedir/include/linux/netfilter/nfnetlink.h | $GREP -q 'struct nfnl_info'; then
+	AC_MSG_RESULT(yes)
+	AC_SUBST(HAVE_NFNL_INFO_IN_NFNL_CALLBACK, define)
+else
+	AC_MSG_RESULT(no)
+	AC_SUBST(HAVE_NFNL_INFO_IN_NFNL_CALLBACK, undef)
+fi
+
+AC_MSG_CHECKING([kernel source for enum nfnl_callback_type])
+if test -f $ksourcedir/include/linux/netfilter/nfnetlink.h && \
+   $GREP -q 'enum nfnl_callback_type ' $ksourcedir/include/linux/netfilter/nfnetlink.h; then
+	AC_MSG_RESULT(yes)
+	AC_SUBST(HAVE_NFNL_CALLBACK_TYPE, define)
+else
+	AC_MSG_RESULT(no)
+	AC_SUBST(HAVE_NFNL_CALLBACK_TYPE, undef)
+fi
+
+AC_MSG_CHECKING([kernel source of handling -EAGAIN in nfnetlink_unicast])
+if test -f $ksourcedir/net/netfilter/nfnetlink.c && \
+   $AWK '/nfnetlink_unicast\(/,/^}/' $ksourcedir/net/netfilter/nfnetlink.c | $GREP -q 'err == -EAGAIN'; then
+	AC_MSG_RESULT(yes)
+	AC_SUBST(HAVE_EAGAIN_IN_NFNETLINK_UNICAST, define)
+else
+	AC_MSG_RESULT(no)
+	AC_SUBST(HAVE_EAGAIN_IN_NFNETLINK_UNICAST, undef)
+fi
+
+AC_MSG_CHECKING([kernel source for nlmsg_unicast which returns zero in case of success])
+if test -f $ksourcedir/include/net/netlink.h && \
+   $AWK '/static inline int nlmsg_unicast\(/,/^}/' $ksourcedir/include/net/netlink.h | $GREP -q 'err > 0'; then
+	AC_MSG_RESULT(yes)
+	AC_SUBST(HAVE_NLMSG_UNICAST, define)
+else
+	AC_MSG_RESULT(no)
+	AC_SUBST(HAVE_NLMSG_UNICAST, undef)
+fi
+
+AC_MSG_CHECKING([kernel source for kvzalloc() in mm.h and slab.h])
+if test -f $ksourcedir/include/linux/mm.h && \
+   $GREP -q 'static inline void \*kvzalloc(' $ksourcedir/include/linux/mm.h; then
+	AC_MSG_RESULT(yes)
+	AC_SUBST(HAVE_KVZALLOC, define)
+elif test -f $ksourcedir/include/linux/slab.h && \
+   $GREP -q 'kvzalloc' $ksourcedir/include/linux/slab.h; then
+	AC_MSG_RESULT(yes)
+	AC_SUBST(HAVE_KVZALLOC, define)
+else
+	AC_MSG_RESULT(no)
+	AC_SUBST(HAVE_KVZALLOC, undef)
+fi
+
+AC_MSG_CHECKING([kernel source for GFP_KERNEL_ACCOUNT in gfp.h])
+if test -f $ksourcedir/include/linux/gfp.h && \
+   $GREP -q 'define GFP_KERNEL_ACCOUNT' $ksourcedir/include/linux/gfp.h; then
+	AC_MSG_RESULT(yes)
+	AC_SUBST(HAVE_GFP_KERNEL_ACCOUNT, define)
+else
+	AC_MSG_RESULT(no)
+	AC_SUBST(HAVE_GFP_KERNEL_ACCOUNT, undef)
 fi
 
 AC_MSG_CHECKING([kernel source for struct net_generic])
@@ -783,7 +935,8 @@ dnl Checks for library functions.
 dnl Generate output
 AC_CONFIG_FILES([Makefile include/libipset/Makefile
 	lib/Makefile lib/libipset.pc src/Makefile utils/Makefile
-	kernel/include/linux/netfilter/ipset/ip_set_compat.h])
+	kernel/include/linux/netfilter/ipset/ip_set_compat.h
+	kernel/include/linux/netfilter/ipset/ip_set_compiler.h])
 AC_OUTPUT
 
 dnl Summary

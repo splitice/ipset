@@ -84,6 +84,8 @@ enum ipset_envopt {
 	IPSET_ENV_LIST_SETNAME	= (1 << IPSET_ENV_BIT_LIST_SETNAME),
 	IPSET_ENV_BIT_LIST_HEADER = 5,
 	IPSET_ENV_LIST_HEADER	= (1 << IPSET_ENV_BIT_LIST_HEADER),
+	IPSET_ENV_BIT_QUOTED 	= 6,
+	IPSET_ENV_QUOTED	= (1 << IPSET_ENV_BIT_QUOTED),
 };
 
 extern bool ipset_envopt_test(struct ipset_session *session,
@@ -98,6 +100,7 @@ enum ipset_output_mode {
 	IPSET_LIST_PLAIN,
 	IPSET_LIST_SAVE,
 	IPSET_LIST_XML,
+	IPSET_LIST_JSON,
 };
 
 extern int ipset_session_output(struct ipset_session *session,

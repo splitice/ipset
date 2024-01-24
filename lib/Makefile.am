@@ -47,7 +47,6 @@ EXTRA_libipset_la_SOURCES = \
 
 EXTRA_DIST = $(IPSET_SETTYPE_LIST) libipset.map
 
-pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libipset.pc
 
 dist_man_MANS = libipset.3

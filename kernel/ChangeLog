@@ -1,3 +1,106 @@
+7.18
+  - netfilter: ipset: Fix race between IPSET_CMD_CREATE and IPSET_CMD_SWAP
+    (reported by Kyle Zeng)
+  - netfilter: ipset: add the missing IP_SET_HASH_WITH_NET0 macro for
+    ip_set_hash_netportnet.c (Kyle Zeng)
+  - compatibility: handle strscpy_pad()
+  - netfilter: ipset: refactor deprecated strncpy (Justin Stitt)
+  - netfilter: ipset: remove rcu_read_lock_bh pair from ip_set_test
+    (Florian Westphal)
+  - netfilter: ipset: Replace strlcpy with strscpy (Azeem Shaikh)
+  - netfilter: ipset: Add schedule point in call_ad(). (Kuniyuki Iwashima)
+  - net: Kconfig: fix spellos (Randy Dunlap)
+  - netfilter: ipset: Fix overflow before widen in the bitmap_ip_create()
+    function. (Gavrilov Ilia)
+
+7.17
+  - netfilter: ipset: Rework long task execution when adding/deleting entries
+  - netfilter: ipset: fix hash:net,port,net hang with /0 subnet
+
+7.16
+  - netfilter: ipset: restore allowing 64 clashing elements in hash:net,iface
+  - Fix all debug mode warnings
+  - netfilter: ipset: Add support for new bitmask parameter (Vishwanath Pai)
+  - netfilter: ipset: regression in ip_set_hash_ip.c (Vishwanath Pai)
+  - netfilter: move from strlcpy with unused retval to strscpy
+    (Wolfram Sang)
+  - compatibility: handle unsafe_memcpy()
+  - netlink: Bounds-check struct nlmsgerr creation (Kees Cook)
+  - compatibility: move to skb_protocol in the code from tc_skb_protocol
+  - Compatibility: check kvcalloc, kvfree, kvzalloc in slab.h too
+  - sched: consistently handle layer3 header accesses in the presence
+    of VLANs (Toke Høiland-Jørgensen)
+  - treewide: Replace GPLv2 boilerplate/reference with SPDX
+    - rule 500 (Thomas Gleixner)
+  - headers: Remove some left-over license text in 
+    include/uapi/linux/netfilter/ (Christophe JAILLET)
+  - netfilter: ipset: enforce documented limit to prevent allocating
+    huge memory
+  - netfilter: ipset: Fix oversized kvmalloc() calls
+
+7.15
+  - netfilter: ipset: Fix maximal range check in hash_ipportnet4_uadt()
+    (Nathan Chancellor)
+
+7.14
+  - 64bit division isn't allowed on 32bit, replace it with shift
+
+7.13
+  - Limit the maximal range of consecutive elements to add/delete fix
+
+7.12
+  - Limit the maximal range of consecutive elements to add/delete
+  - Backport "netfilter: use nfnetlink_unicast()"
+  - Backport "netfilter: nfnetlink: consolidate callback type"
+  - Backport "netfilter: nfnetlink: add struct nfnl_info and
+    pass it to callbacks"
+  - Backport "netfilter: add helper function to set up the
+    nfnetlink header and use it"
+
+7.10
+  - Fix patch "Handle false warning from -Wstringop-overflow"
+  - Backward compatibility: handle renaming nla_strlcpy to nla_strscpy
+  - treewide: rename nla_strlcpy to nla_strscpy. (Francis Laniel)
+  - netfilter: ipset: fix shift-out-of-bounds in htable_bits()
+    (Vasily Averin)
+  - netfilter: ipset: fixes possible oops in mtype_resize (Vasily Averin)
+  - Handle false warning from -Wstringop-overflow
+  - Backward compatibility: handle missing strscpy with a wrapper of strlcpy.
+  - Move compiler specific compatibility support to separated file (broken
+    compatibility support reported by Ed W)
+
+7.8
+  - Complete backward compatibility fix for package copy of <linux/jhash.h>
+  - Compatibility: check for kvzalloc() and GFP_KERNEL_ACCOUNT
+  - netfilter: ipset: enable memory accounting for ipset allocations
+    (Vasily Averin)
+  - netfilter: ipset: prevent uninit-value in hash_ip6_add (Eric Dumazet)
+  - Compatibility: use skb_policy() from if_vlan.h if available
+  - Compatibility: Check for the fourth arg of list_for_each_entry_rcu()
+  - Backward compatibility fix for the package copy of <linux/jhash.h>
+
+7.7
+  - Expose the initval hash parameter to userspace
+  - Add bucketsize parameter to all hash types
+  - Use fallthrough pseudo-keyword in the package copy of <linux/jhash.h> too
+  - Support the -exist flag with the destroy command
+  - netfilter: Use fallthrough pseudo-keyword (Gustavo A. R. Silva)
+  - netfilter: Replace zero-length array with flexible-array member
+    (Gustavo A. R. Silva)
+  - netfilter: ipset: call ip_set_free() instead of kfree() (Eric Dumazet)
+  - netfiler: ipset: fix unaligned atomic access (Russell King)
+  - netfilter: ipset: Fix subcounter update skip (Phil Sutter)
+  - ipset: Update byte and packet counters regardless of whether they match
+    (Stefano Brivio)
+  - netfilter: ipset: Pass lockdep expression to RCU lists (Amol Grover)
+  - ip_set: Fix compatibility with kernels between v3.3 and v4.5
+    (Serhey Popovych)
+  - ip_set: Fix build on kernels without INIT_DEFERRABLE_WORK
+    (Serhey Popovych)
+  - ipset: Support kernels with at least system_wq support
+  - ip_set: Fix build on kernels without system_power_efficient_wq
+    (Serhey Popovych)
+
 7.6
   - netfilter: ipset: Fix forceadd evaluation path
   - netfilter: ipset: Correct the reported memory size

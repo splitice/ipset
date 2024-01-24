@@ -6,12 +6,15 @@
  * it under the terms of the GNU General Public License version 2 as
  * published by the Free Software Foundation.
  */
+#define _GNU_SOURCE
 #include <assert.h>			/* assert */
 #include <stdio.h>			/* fprintf */
 #include <stdlib.h>			/* exit */
+#include <string.h>			/* strcmp */
 
 #include <config.h>
 #include <libipset/ipset.h>		/* ipset library */
+#include <libipset/xlate.h>		/* translate to nftables */
 
 int
 main(int argc, char *argv[])
@@ -29,7 +32,11 @@ main(int argc, char *argv[])
 		exit(1);
 	}
 
-	ret = ipset_parse_argv(ipset, argc, argv);
+	if (!strcmp(basename(argv[0]), "ipset-translate")) {
+		ret = ipset_xlate_argv(ipset, argc, argv);
+	} else {
+		ret = ipset_parse_argv(ipset, argc, argv);
+	}
 
 	ipset_fini(ipset);
 

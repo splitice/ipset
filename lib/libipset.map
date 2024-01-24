@@ -202,3 +202,18 @@ global:
   ipset_session_report_msg;
   ipset_session_report_type;
 } LIBIPSET_4.8;
+
+LIBIPSET_4.10 {
+global:
+  ipset_print_hexnumber;
+} LIBIPSET_4.9;
+
+LIBIPSET_4.11 {
+global:
+  ipset_xlate_argv;
+} LIBIPSET_4.10;
+
+LIBIPSET_4.12 {
+global:
+  ipset_parse_bitmask;
+} LIBIPSET_4.10;
